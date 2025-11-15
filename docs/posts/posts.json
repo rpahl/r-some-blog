@@ -1,5 +1,23 @@
 [
   {
+    "path": "posts/2025-11-15-container-v1.1.0-on-cran/",
+    "title": "container: v1.1.0 on CRAN",
+    "description": "The {container} package provides an enhanced version of base R's list.\nVersion 1.1.0 adds new extract and replace operations for interactive use\nto both match base R's list behavior more closely and to introduce new\nconvenient features beyond that.",
+    "author": [],
+    "date": "2025-11-15",
+    "categories": [
+      "container",
+      "list",
+      "R package"
+    ],
+    "contents": "\r\n\r\nContents\r\nWhat’s new?\r\nExtraction\r\nReplacement\r\nDerived classes\r\n\r\nWhat’s new?\r\nVersion 1.1.0 mainly adds new extract and replace operations.\r\nLike base R lists, it now also supports negative complements (x[-1]) and logical\r\nindexing (x[c(TRUE, FALSE)]). In addition, it enables range selection using\r\nnon-standard evaluation (x[a:b], x[1:c]).\r\nFor a detailed overview of all changes in this release, see the\r\nchangelog.\r\n\r\n\r\n\r\nExtraction\r\nNegative complements and logical indexing now work as known from base R lists.\r\nNegative complements\r\n\r\n\r\nco <- container(a = 1, b = 2, c = 3, d = 4)\r\n\r\nco[-1]\r\n\r\n[b = 2, c = 3, d = 4]\r\n\r\nco[-(1:3)]\r\n\r\n[d = 4]\r\n\r\nco[-c(\"a\", \"d\")]\r\n\r\n[b = 2, c = 3]\r\n\r\nLogical indexing\r\n\r\n\r\nmask <- c(TRUE, FALSE)\r\nco[mask]\r\n\r\n[a = 1, c = 3]\r\n\r\nmask2 <- c(TRUE, NA)\r\nco[mask2]       # NA treated as FALSE (warning) -> [a = 1, c = 3]\r\n\r\n[a = 1, c = 3]\r\n\r\nRange selection using non-standard evaluation (NSE)\r\nRange selection using NSE works with names and numbers, including\r\nmixed usage, reversed order, and negative complements.\r\n\r\n\r\nco[a:b]\r\n\r\n[a = 1, b = 2]\r\n\r\nco[1:c]\r\n\r\n[a = 1, b = 2, c = 3]\r\n\r\nco[d:2]\r\n\r\n[d = 4, c = 3, b = 2]\r\n\r\nco[-(b:c)]\r\n\r\n[a = 1, d = 4]\r\n\r\nWarning: while NSE selections are perfect for interactive work where clarity beats\r\nceremony, for serious code, explicit indices are preferred.\r\nReplacement\r\nReplacing values works similarly to extraction.\r\n\r\n\r\nco <- container(a = 1, b = 2, c = 3, d = 4)\r\n\r\nco[-(b:c)] <- 0\r\nco\r\n\r\n[a = 0, b = 2, c = 3, d = 0]\r\n\r\nco[c(TRUE, FALSE)] <- 9\r\nco\r\n\r\n[a = 9, b = 2, c = 9, d = 0]\r\n\r\nDerived classes\r\nAs the container serves as the base class for all other classes in the\r\npackage, all new extraction and replacement operations are also available\r\nfor deque, set, and dict objects.\r\n\r\n\r\ns <- setnew(a = 1, b = 2, c = 3, d = 4)\r\ns[-(b:c)]\r\n\r\n{a = 1, d = 4}\r\n\r\nparams <- dict(a = 1, x = 3, b = \"foo\", y = \"bar\")\r\nparams      # dicts are always sorted by key\r\n\r\n{a = 1, b = \"foo\", x = 3, y = \"bar\"}\r\n\r\nparams[a:x]\r\n\r\n{a = 1, b = \"foo\", x = 3}\r\n\r\nTo see the full official documentation, visit\r\nhttps://rpahl.github.io/container/.\r\n\r\n\r\n\r\n",
+    "preview": "posts/2025-11-15-container-v1.1.0-on-cran/container.png",
+    "last_modified": "2025-11-15T17:59:53+01:00",
+    "input_file": {},
+    "preview_width": 602,
+    "preview_height": 415
+  },
+  {
     "path": "posts/2024-12-21-introducing-pipeflow/",
     "title": "Introducing the {pipeflow} package",
     "description": "Efficiently managing complex data analysis workflows can be a challenge.\nIn standard R programming, chaining functions, tracking intermediate results,\nand maintaining dependencies between steps often lead to cluttered code that\nis difficult to scale or modify. Enter {pipeflow} — a beginner-friendly R\npackage designed to simplify and streamline data analysis pipelines by making\nthem modular, intuitive, and adaptable.",
