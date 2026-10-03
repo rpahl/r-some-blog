@@ -156,6 +156,11 @@ pip_run(pip_view(pip, step = "report"))
 ```
 
 Afterwards, the original pipeline is up to date for the covered steps.
+Let's collect all results related to the "core" steps:
+
+```{r}
+pip[tags %like% "core"] |> pip_collect()
+```
 
 For a complete guide on composing views, see the
 [Pipeline views](https://rpahl.github.io/pipeflow/articles/v03b-pipeline-views.html)
