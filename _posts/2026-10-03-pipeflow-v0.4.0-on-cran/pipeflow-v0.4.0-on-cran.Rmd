@@ -113,7 +113,9 @@ filters:
 
 ```{r views-create}
 pip_view(pip, tags = "core")
+
 pip_view(pip, tags = "core", state = "done")
+
 pip_view(pip, step = c("clean", "fit"))
 ```
 
@@ -124,6 +126,7 @@ expressions:
 
 ```{r views-create-2}
 pip_view(pip, tags = "report", step = "clean", join = "union")
+
 pip_view(pip, step = "^f", fixed = FALSE)
 ```
 
@@ -140,6 +143,7 @@ Boolean filters are evaluated in the context of the step table.
 
 ```{r views-select-2}
 pip[tags %like% "core"]
+
 pip[step %in% c("clean", "fit") & state == "done"]
 ```
 
@@ -152,6 +156,7 @@ as `[view]` and the dependencies pulled in as `[upstream]`:
 
 ```{r views-run}
 pip_reset(pip)  # reset the pipeline to "new" state for demonstration
+
 pip_run(pip_view(pip, step = "report"))
 ```
 

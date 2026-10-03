@@ -1627,12 +1627,12 @@ and our <code>tags</code>. Once we run the pipeline, …</p>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_run.html'>pip_run</a></span><span class='op'>(</span><span class='va'>pip</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code>info [2026-10-03 09:36:44.091 UTC]: Starting run of pipeflow &#39;my-pip&#39;
-info [2026-10-03 09:36:44.091 UTC]: Step 1/4 load
-info [2026-10-03 09:36:44.092 UTC]: Step 2/4 clean
-info [2026-10-03 09:36:44.093 UTC]: Step 3/4 fit
-info [2026-10-03 09:36:44.095 UTC]: Step 4/4 report
-info [2026-10-03 09:36:44.096 UTC]: Finished run of pipeflow &#39;my-pip&#39;</code></pre>
+<pre><code>info [2026-10-03 11:52:38.120 UTC]: Starting run of pipeflow &#39;my-pip&#39;
+info [2026-10-03 11:52:38.121 UTC]: Step 1/4 load
+info [2026-10-03 11:52:38.122 UTC]: Step 2/4 clean
+info [2026-10-03 11:52:38.129 UTC]: Step 3/4 fit
+info [2026-10-03 11:52:38.134 UTC]: Step 4/4 report
+info [2026-10-03 11:52:38.136 UTC]: Finished run of pipeflow &#39;my-pip&#39;</code></pre>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>pip</span></span></code></pre>
 </div>
@@ -1644,7 +1644,7 @@ info [2026-10-03 09:36:44.096 UTC]: Finished run of pipeflow &#39;my-pip&#39;</c
 3:    fit      x   clean  done             30 model,core
 4: report      x     fit  done     result: 30     report
 ---------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 </div>
 <p>… there is a new <code>out</code> column with the results, which can also be
 accessed directly:</p>
@@ -1674,7 +1674,7 @@ filters:</p>
 1: clean      x    load  done  2, 4, 6, 8,10    io,core
 2:   fit      x   clean  done             30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_view.html'>pip_view</a></span><span class='op'>(</span><span class='va'>pip</span>, tags <span class='op'>=</span> <span class='st'>"core"</span>, state <span class='op'>=</span> <span class='st'>"done"</span><span class='op'>)</span></span></code></pre>
 </div>
@@ -1684,7 +1684,7 @@ filters:</p>
 1: clean      x    load  done  2, 4, 6, 8,10    io,core
 2:   fit      x   clean  done             30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_view.html'>pip_view</a></span><span class='op'>(</span><span class='va'>pip</span>, step <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"clean"</span>, <span class='st'>"fit"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
@@ -1694,7 +1694,7 @@ filters:</p>
 1: clean      x    load  done  2, 4, 6, 8,10    io,core
 2:   fit      x   clean  done             30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 </div>
 <p>By default steps must match <em>all</em> filters (logical AND), while the values
 within one filter are alternatives (OR). <code>join = "union"</code> keeps steps that
@@ -1710,7 +1710,7 @@ expressions:</p>
 1:  clean      x    load  done  2, 4, 6, 8,10 io,core
 2: report      x     fit  done     result: 30  report
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_view.html'>pip_view</a></span><span class='op'>(</span><span class='va'>pip</span>, step <span class='op'>=</span> <span class='st'>"^f"</span>, fixed <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></span></code></pre>
 </div>
@@ -1719,7 +1719,7 @@ expressions:</p>
    step params depends state out       tags
 1:  fit      x   clean  done  30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 </div>
 <h4 id="selecting-steps-with">Selecting steps with <code>[</code></h4>
 <p>The extract operator (also new in v0.4.0) provides a data.table-like way of
@@ -1734,7 +1734,7 @@ selecting steps and returns a view by default:</p>
 1: load      n          done 1,2,3,4,5   io,daily
 2:  fit      x   clean  done        30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 </div>
 <p>Boolean filters are evaluated in the context of the step table.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -1747,7 +1747,7 @@ selecting steps and returns a view by default:</p>
 1: clean      x    load  done  2, 4, 6, 8,10    io,core
 2:   fit      x   clean  done             30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>pip</span><span class='op'>[</span><span class='va'>step</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"clean"</span>, <span class='st'>"fit"</span><span class='op'>)</span> <span class='op'>&amp;</span> <span class='va'>state</span> <span class='op'>==</span> <span class='st'>"done"</span><span class='op'>]</span></span></code></pre>
 </div>
@@ -1757,7 +1757,7 @@ selecting steps and returns a view by default:</p>
 1: clean      x    load  done  2, 4, 6, 8,10    io,core
 2:   fit      x   clean  done             30 model,core
 ------------------------------------------
-&lt;ready&gt; last run: 2026-10-03 11:36:44</code></pre>
+&lt;ready&gt; last run: 2026-10-03 13:52:38</code></pre>
 </div>
 <h4 id="running-views">Running views</h4>
 <p>Running a view executes the steps it covers together with any upstream
@@ -1766,14 +1766,15 @@ as <code>[view]</code> and the dependencies pulled in as <code>[upstream]</code>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_reset.html'>pip_reset</a></span><span class='op'>(</span><span class='va'>pip</span><span class='op'>)</span>  <span class='co'># reset the pipeline to "new" state for demonstration</span></span>
+<span></span>
 <span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_run.html'>pip_run</a></span><span class='op'>(</span><span class='fu'><a href='https://github.com/rpahl/pipeflow/reference/pip_view.html'>pip_view</a></span><span class='op'>(</span><span class='va'>pip</span>, step <span class='op'>=</span> <span class='st'>"report"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
-<pre><code>info [2026-10-03 09:36:44.196 UTC]: Starting run of pipeflow &#39;my-pip view&#39;
-info [2026-10-03 09:36:44.197 UTC]: Step 1/4 [upstream] load
-info [2026-10-03 09:36:44.197 UTC]: Step 2/4 [upstream] clean
-info [2026-10-03 09:36:44.198 UTC]: Step 3/4 [upstream] fit
-info [2026-10-03 09:36:44.203 UTC]: Step 4/4 [view] report
-info [2026-10-03 09:36:44.204 UTC]: Finished run of pipeflow &#39;my-pip view&#39;</code></pre>
+<pre><code>info [2026-10-03 11:52:38.298 UTC]: Starting run of pipeflow &#39;my-pip view&#39;
+info [2026-10-03 11:52:38.298 UTC]: Step 1/4 [upstream] load
+info [2026-10-03 11:52:38.298 UTC]: Step 2/4 [upstream] clean
+info [2026-10-03 11:52:38.300 UTC]: Step 3/4 [upstream] fit
+info [2026-10-03 11:52:38.301 UTC]: Step 4/4 [view] report
+info [2026-10-03 11:52:38.302 UTC]: Finished run of pipeflow &#39;my-pip view&#39;</code></pre>
 </div>
 <p>Afterwards, the original pipeline is up to date for the covered steps.
 Let’s collect all results related to the “core” steps:</p>
