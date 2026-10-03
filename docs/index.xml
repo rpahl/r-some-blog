@@ -12,7 +12,300 @@
       <link>https://rpahl.github.io/r-some-blog/</link>
     </image>
     <generator>Distill</generator>
-    <lastBuildDate>Sat, 15 Nov 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 02 Oct 2026 00:00:00 +0000</lastBuildDate>
+    <item>
+      <title>pipeflow: v0.4.0 on CRAN</title>
+      <link>https://rpahl.github.io/r-some-blog/posts/2026-10-02-pipeflow-v0.4.0-on-cran</link>
+      <description>
+
+
+&lt;h3 id="pipeline-setup"&gt;Pipeline setup&lt;/h3&gt;
+&lt;p&gt;{pipeflow} builds a pipeline by adding one R function per step with
+&lt;em&gt;pip_add&lt;/em&gt; (see also the &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v01-get-started.html"&gt;Get
+started&lt;/a&gt; article). In this post, we’ll work with the following toy
+pipeline:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;step “load” produces a sequence&lt;/li&gt;
+&lt;li&gt;step “clean” doubles it&lt;/li&gt;
+&lt;li&gt;step “fit” sums it, and&lt;/li&gt;
+&lt;li&gt;step “report” formats the result&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip &amp;lt;- pip_new(&amp;quot;my-pip&amp;quot;) |&amp;gt;
+    pip_add(
+        step = &amp;quot;load&amp;quot;,
+        fun = \(n = 5) seq_len(n),
+        tags = c(&amp;quot;io&amp;quot;, &amp;quot;daily&amp;quot;)
+    ) |&amp;gt;
+    pip_add(
+        step = &amp;quot;clean&amp;quot;,
+        fun = \(x = ~load) x * 2,
+        tags = c(&amp;quot;io&amp;quot;, &amp;quot;core&amp;quot;)
+    ) |&amp;gt;
+    pip_add(
+        step = &amp;quot;fit&amp;quot;,
+        fun = \(x = ~clean) sum(x),
+        tags = c(&amp;quot;model&amp;quot;, &amp;quot;core&amp;quot;)
+    ) |&amp;gt;
+    pip_add(
+        step = &amp;quot;report&amp;quot;,
+        fun = \(x = ~fit) paste(&amp;quot;result:&amp;quot;, x),
+        tags = &amp;quot;report&amp;quot;
+    )&lt;/code&gt;&lt;/pre&gt;
+&lt;aside&gt;
+&lt;img src="https://rpahl.github.io/r-some-blog//posts/2026-10-02-pipeflow-v0.4.0-on-cran/logo.png" alt="" width="100%" /&gt;
+&lt;/aside&gt;
+&lt;p&gt;Each step must have a unique name, and function parameters can refer
+to other steps, for example, “x = ~load” takes the output of the
+&lt;em&gt;load&lt;/em&gt; step. Here we also assigned tags to each step, which we
+will use to filter steps later.&lt;/p&gt;
+&lt;p&gt;Before we run it, let’s have a look:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow&amp;gt; my-pip (4 steps)
+---------------------------
+     step params depends state       tags
+1:   load      n           new   io,daily
+2:  clean      x    load   new    io,core
+3:    fit      x   clean   new model,core
+4: report      x     fit   new     report
+---------------------------
+&amp;lt;ready&amp;gt; last run: never&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We see one row per step, showing its parameters
+(&lt;code&gt;params&lt;/code&gt;), the steps it depends on (&lt;code&gt;depends&lt;/code&gt;),
+its current &lt;code&gt;state&lt;/code&gt; (all &lt;code&gt;new&lt;/code&gt; before the first
+run), and our &lt;code&gt;tags&lt;/code&gt;. Once we run the pipeline, …&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_run(pip)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;info [2026-10-03 08:39:57.179 UTC]: Starting run of pipeflow &amp;#39;my-pip&amp;#39;
+info [2026-10-03 08:39:57.179 UTC]: Step 1/4 load
+info [2026-10-03 08:39:57.180 UTC]: Step 2/4 clean
+info [2026-10-03 08:39:57.181 UTC]: Step 3/4 fit
+info [2026-10-03 08:39:57.182 UTC]: Step 4/4 report
+info [2026-10-03 08:39:57.183 UTC]: Finished run of pipeflow &amp;#39;my-pip&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow&amp;gt; my-pip (4 steps)
+---------------------------
+     step params depends state            out       tags
+1:   load      n          done      1,2,3,4,5   io,daily
+2:  clean      x    load  done  2, 4, 6, 8,10    io,core
+3:    fit      x   clean  done             30 model,core
+4: report      x     fit  done     result: 30     report
+---------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;… there is a new &lt;code&gt;out&lt;/code&gt; column with the results, which can
+also be accessed directly:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow&amp;gt; my-pip (4 steps)
+---------------------------
+     step params depends state            out       tags
+1:   load      n          done      1,2,3,4,5   io,daily
+2:  clean      x    load  done  2, 4, 6, 8,10    io,core
+3:    fit      x   clean  done             30 model,core
+4: report      x     fit  done     result: 30     report
+---------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip[[&amp;quot;report&amp;quot;, &amp;quot;out&amp;quot;]]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1] &amp;quot;result: 30&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id="pipeline-views-in-action"&gt;Pipeline views in action&lt;/h3&gt;
+&lt;p&gt;Real pipelines get long, and often you only care about a subset of
+steps: a topic, a stage, or the steps that produce the desired outputs.
+Views (new in v0.4.0) let you work on such a subset without copying
+anything. They reference the underlying pipeline, so every operation
+applied to it — running it, updating parameters, collecting output, … —
+writes through to the original pipeline, restricted to the steps the
+view covers.&lt;/p&gt;
+&lt;h4 id="creating-views"&gt;Creating views&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;pip_view()&lt;/code&gt; returns a view containing only the steps that
+match the given filters:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_view(pip, tags = &amp;quot;core&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+    step params depends state            out       tags
+1: clean      x    load  done  2, 4, 6, 8,10    io,core
+2:   fit      x   clean  done             30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_view(pip, tags = &amp;quot;core&amp;quot;, state = &amp;quot;done&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+    step params depends state            out       tags
+1: clean      x    load  done  2, 4, 6, 8,10    io,core
+2:   fit      x   clean  done             30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_view(pip, step = c(&amp;quot;clean&amp;quot;, &amp;quot;fit&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+    step params depends state            out       tags
+1: clean      x    load  done  2, 4, 6, 8,10    io,core
+2:   fit      x   clean  done             30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;By default steps must match &lt;em&gt;all&lt;/em&gt; filters (logical AND), while
+the values within one filter are alternatives (OR).
+&lt;code&gt;join = "union"&lt;/code&gt; keeps steps that match any filter, and
+&lt;code&gt;fixed = FALSE&lt;/code&gt; treats filter values as regular
+expressions:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_view(pip, tags = &amp;quot;report&amp;quot;, step = &amp;quot;clean&amp;quot;, join = &amp;quot;union&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+     step params depends state            out    tags
+1:  clean      x    load  done  2, 4, 6, 8,10 io,core
+2: report      x     fit  done     result: 30  report
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_view(pip, step = &amp;quot;^f&amp;quot;, fixed = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (1 of 4 steps)
+------------------------------------------
+   step params depends state out       tags
+1:  fit      x   clean  done  30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id="selecting-steps-with"&gt;Selecting steps with &lt;code&gt;[&lt;/code&gt;&lt;/h4&gt;
+&lt;p&gt;The extract operator (also new in v0.4.0) provides a data.table-like
+way of selecting steps and returns a view by default:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip[c(&amp;quot;load&amp;quot;, &amp;quot;fit&amp;quot;)]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+   step params depends state       out       tags
+1: load      n          done 1,2,3,4,5   io,daily
+2:  fit      x   clean  done        30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Boolean filters are evaluated in the context of the step table.&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip[tags %like% &amp;quot;core&amp;quot;]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+    step params depends state            out       tags
+1: clean      x    load  done  2, 4, 6, 8,10    io,core
+2:   fit      x   clean  done             30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip[step %in% c(&amp;quot;clean&amp;quot;, &amp;quot;fit&amp;quot;) &amp;amp; state == &amp;quot;done&amp;quot;]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;pipeflow_view&amp;gt; my-pip view (2 of 4 steps)
+------------------------------------------
+    step params depends state            out       tags
+1: clean      x    load  done  2, 4, 6, 8,10    io,core
+2:   fit      x   clean  done             30 model,core
+------------------------------------------
+&amp;lt;ready&amp;gt; last run: 2026-10-03 10:39:57&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id="running-views"&gt;Running views&lt;/h4&gt;
+&lt;p&gt;Running a view executes the steps it covers together with any
+upstream dependencies that are not up to date. The run log marks the
+view’s own steps as &lt;code&gt;[view]&lt;/code&gt; and the dependencies pulled in
+as &lt;code&gt;[upstream]&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;pip_reset(pip)  # reset the pipeline to &amp;quot;new&amp;quot; state for demonstration
+pip_run(pip_view(pip, step = &amp;quot;report&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;info [2026-10-03 08:39:57.256 UTC]: Starting run of pipeflow &amp;#39;my-pip view&amp;#39;
+info [2026-10-03 08:39:57.257 UTC]: Step 1/4 [upstream] load
+info [2026-10-03 08:39:57.257 UTC]: Step 2/4 [upstream] clean
+info [2026-10-03 08:39:57.259 UTC]: Step 3/4 [upstream] fit
+info [2026-10-03 08:39:57.259 UTC]: Step 4/4 [view] report
+info [2026-10-03 08:39:57.260 UTC]: Finished run of pipeflow &amp;#39;my-pip view&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Afterwards the original pipeline is up to date for the covered
+steps.&lt;/p&gt;
+&lt;p&gt;For a complete guide on composing views see the &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v03b-pipeline-views.html"&gt;Pipeline
+views&lt;/a&gt; vignette.&lt;/p&gt;
+&lt;h3 id="more-new-and-updated-features"&gt;More new and updated
+features&lt;/h3&gt;
+&lt;p&gt;Views are only one of the additions. Each of the following has its
+own article on the &lt;a
+href="https://rpahl.github.io/pipeflow/"&gt;documentation site&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Functional and method-style API&lt;/strong&gt; — the pipeable
+&lt;code&gt;pip_*()&lt;/code&gt; functions, with every function also available as a
+method (&lt;code&gt;p$run()&lt;/code&gt;, &lt;code&gt;p$view()&lt;/code&gt;, …): &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v01-get-started.html"&gt;Get
+started&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Extract and replace operators&lt;/strong&gt; — data.table-style
+&lt;code&gt;[&lt;/code&gt; and &lt;code&gt;[[&lt;/code&gt; for reading and editing steps: &lt;a
+href="https://rpahl.github.io/pipeflow/reference/Extract.pipeflow.html"&gt;reference&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Collect and group output&lt;/strong&gt; —
+&lt;code&gt;pip_collect()&lt;/code&gt; with grouping by tags or dependencies: &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v04-collect-output.html"&gt;Collect
+and group output&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Combining and modifying pipelines&lt;/strong&gt; —
+&lt;code&gt;rbind()&lt;/code&gt; several pipelines, or replace, rename, remove, and
+reset steps: &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v03a-combine-pipelines.html"&gt;Combine
+pipelines&lt;/a&gt; · &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v02-modify-pipeline.html"&gt;Modify
+existing pipelines&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Split, map, and reduce&lt;/strong&gt; — native
+&lt;code&gt;exec = "split"&lt;/code&gt;, &lt;code&gt;"auto"&lt;/code&gt;, and
+&lt;code&gt;"reduce"&lt;/code&gt; modes: &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v05a-split-map-reduce.html"&gt;Split,
+map, and reduce&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Nested pipelines&lt;/strong&gt; — use a pipeline as a reusable
+building block inside a step: &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v05b-nested-pipeline.html"&gt;Nested
+pipelines&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Self-modifying pipelines&lt;/strong&gt; — &lt;code&gt;.self&lt;/code&gt;,
+run-time restructuring, and &lt;code&gt;restart()&lt;/code&gt;: &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v06-self-modify-pipeline.html"&gt;Self-modifying
+pipelines&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Under the hood, significant performance gains have been made by
+implementing the dependency graph in C++ (since v0.3.0) and improving
+the step and parameter bookkeeping backed by {data.table} for speed and
+memory usage. Finally, by dropping &lt;code&gt;lgr&lt;/code&gt; and
+&lt;code&gt;jsonlite&lt;/code&gt;, the package dependencies have been reduced to
+only {data.table} and Rcpp.&lt;/p&gt;
+&lt;h3 id="pipeflow-vs-targets"&gt;{pipeflow} vs {targets}&lt;/h3&gt;
+&lt;p&gt;{targets} remains R’s de-facto standard for heavy-duty, reproducible
+pipelines: it persists results to disk, records provenance, and scales
+to distributed infrastructure via &lt;code&gt;crew&lt;/code&gt;. {pipeflow} does not
+try to compete on that home turf, but targets a different niche — the
+interactive session, often as the backend of a Shiny app — where a
+pipeline is built and modified on the fly and has to respond while a
+user waits. Since responsiveness is key in that use case, {pipeflow} has
+been optimized for low latency.&lt;/p&gt;
+&lt;p&gt;The &lt;a
+href="https://rpahl.github.io/pipeflow/articles/v07-vs-targets.html"&gt;pipeflow
+vs targets&lt;/a&gt; article compares the in-session latency of the two
+packages head to head. The figure below gives a flavour of the
+results:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://rpahl.github.io/r-some-blog//posts/2026-10-02-pipeflow-v0.4.0-on-cran/benchmark-work.png" alt="Warm incremental update with 5 ms of work per step for pipeflow and targets" width="672" /&gt;&lt;/p&gt;
+&lt;p&gt;It shows the scenario where one parameter has changed&lt;a href="#fn1"
+class="footnote-ref" id="fnref1"&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/a&gt; and the pipeline is
+rerun, with each step doing 5 ms of work. The x-axis represents the
+number of steps (i.e, the size) of the pipeline and the y-axis shows the
+time required to re-run the pipeline.&lt;a href="#fn2" class="footnote-ref"
+id="fnref2"&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Across the tested sizes, {pipeflow} is consistently the faster of the
+two — see the article for the full benchmark and methodology.&lt;/p&gt;
+&lt;p&gt;Overall, the two are best seen as complementary: reach for {targets}
+for large batch jobs that must be reproducible end to end, and for
+{pipeflow} when the pipeline is part of an interactive application.&lt;/p&gt;
+&lt;h3 id="wrapping-up"&gt;Wrapping up&lt;/h3&gt;
+&lt;p&gt;{pipeflow} 0.4.0 is on CRAN:&lt;/p&gt;
+&lt;pre class="r"&gt;&lt;code&gt;install.packages(&amp;quot;pipeflow&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;a href="https://rpahl.github.io/pipeflow/news/index.html"&gt;full
+changelog&lt;/a&gt; lists every change, and the &lt;a
+href="https://rpahl.github.io/pipeflow/"&gt;documentation&lt;/a&gt; includes the
+articles linked above. If you build Shiny apps or spend a lot of time
+exploring parameters interactively, give it a try — feedback and issues
+are welcome on &lt;a
+href="https://github.com/rpahl/pipeflow/issues"&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
+&lt;pre class="r distill-force-highlighting-css"&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;div class="footnotes footnotes-end-of-document"&gt;
+&lt;hr /&gt;
+&lt;ol&gt;
+&lt;li id="fn1"&gt;&lt;p&gt;Imagine a user changing the plot axis in a Shiny app.&lt;a
+href="#fnref1" class="footnote-back"&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li id="fn2"&gt;&lt;p&gt; This means, checking which steps are affected by the
+parameter change and then executing those steps.&lt;a href="#fnref2"
+class="footnote-back"&gt;↩︎&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;</description>
+      <distill:md5>f24710131614bb99618c0a01d838bd98</distill:md5>
+      <category>pipeflow</category>
+      <category>R package</category>
+      <category>pipeline tools</category>
+      <guid>https://rpahl.github.io/r-some-blog/posts/2026-10-02-pipeflow-v0.4.0-on-cran</guid>
+      <pubDate>Fri, 02 Oct 2026 00:00:00 +0000</pubDate>
+      <media:content url="https://rpahl.github.io/r-some-blog/posts/2026-10-02-pipeflow-v0.4.0-on-cran/logo.png" medium="image" type="image/png" width="196" height="145"/>
+    </item>
     <item>
       <title>container: v1.1.0 on CRAN</title>
       <link>https://rpahl.github.io/r-some-blog/posts/2025-11-15-container-v1.1.0-on-cran</link>
